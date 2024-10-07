@@ -12,13 +12,14 @@ import {
   getSingleApplicationRequest,
   getSingleMaintenanceRequest,
   getSingleRetirementRequest,
+  allocateHouse,
 } from "../../controllers/admin/adminController.js";
 
 router.post("/signup", signUp);
 router.post("/login", login);
 router.get("/request/all/applications", getAllApplications);
 router.get("/request/applications/:id", getSingleApplication);
-router.get("/request/applications/applications", getAllApplicationRequests);
+router.get("/request/applications", getAllApplicationRequests);
 router.get("/request/applications/maintenance", getAllMaintenanceRequests);
 router.get("/request/applications/retirement", getAllRetirementRequests);
 router.get(
@@ -30,5 +31,6 @@ router.get(
   getSingleMaintenanceRequest
 );
 router.get("/request/applications/retirement/:id", getSingleRetirementRequest);
+router.patch("/request/applications/application/:id/allocate", allocateHouse);
 
 export default router;

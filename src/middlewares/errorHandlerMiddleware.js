@@ -8,7 +8,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   };
 
   // STAFF VALIDATION ERROR
-  if (err.message.includes("staffs validation failed")) {
+  if (err.message.includes("Staff validation failed")) {
     let error = {
       name: "",
       email: "",

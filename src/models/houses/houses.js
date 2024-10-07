@@ -30,8 +30,8 @@ const houseSchema = new Schema(
               type: Schema.Types.ObjectId,
               ref: "Staff",
             },
-            startDate: Date,
-            endDate: Date,
+            startDate: { type: Date, default: null },
+            endDate: { type: Date, default: null }
           },
         ],
         maintenaceRequests: [

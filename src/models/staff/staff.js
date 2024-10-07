@@ -34,15 +34,11 @@ const staffSchema = new Schema(
     password: {
       type: String,
       required: [true, "Enter Password 1-7 characters"],
-      minlength: 8,
+      minlength: [8, 'Password length must exceed 8 characters'],
     },
     dateOfEmployment: {
       type: String,
       required: [true, "Date of employment must be provided"],
-    },
-    dateCreated: {
-      type: Date,
-      default: Date.now(),
     },
     applicationRequests: [{
       type: Schema.Types.ObjectId,
