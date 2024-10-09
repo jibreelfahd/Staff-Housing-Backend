@@ -19,7 +19,7 @@ const maintenanceSchema = new Schema({
     enum: ['maintenance', 'checked'],
     default: 'maintenance'
   },
-  requestData: {
+  requestDate: {
     type: Date,
     default: Date.now()
   }

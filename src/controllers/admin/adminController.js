@@ -270,3 +270,5 @@ export const allocateHouse = async (req, res) => {
     .status(StatusCodes.OK)
     .json({ houseApplication, allocatedHouse: house });
 };
+
+// @desc: UPDATING HOUSE AND FLAGGING IT OFF FOR MAINTENANCE AND ALSO ADMIN FEEBACK SUBMISSION

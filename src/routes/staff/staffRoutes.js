@@ -1,9 +1,16 @@
-import express from 'express';
+import express from "express";
 const router = express.Router();
 
-import { signUp, applicationRequest } from '../../controllers/staff/staffController.js';
+import {
+  signUp,
+  applicationRequest,
+  maintenanceRequest,
+  retirementRequest,
+} from "../../controllers/staff/staffController.js";
 
-router.post('/signup', signUp);
-router.post('/application-request', applicationRequest);
+router.post("/signup", signUp);
+router.post("/application/request", applicationRequest);
+router.post("/maintenance/request", maintenanceRequest);
+router.post("/retirement/request", retirementRequest);
 
 export default router;
