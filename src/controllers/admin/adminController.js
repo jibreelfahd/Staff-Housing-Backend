@@ -52,20 +52,41 @@ export const login = async (req, res) => {
 // @desc: GET ALL APPLICATIONS
 export const getAllApplications = async (req, res) => {
   const applications = await Promise.all([
-    ApplicationRequest.find({}).populate("alocatedHouse").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
+    ApplicationRequest.find({})
+      .populate({
+        path: "alocatedHouse",
+        match: {
+          status: { $in: ["application", "checked"] },
+          applicationStatus: { $in: ["pending", "rejected", "allocated"] },
+        },
+        select: "area houseNumber tenancyHistory status",
+      })
+      .populate({
+        path: "staff",
+        select: "name department dateOfEmployment position staffID",
+      }),
 
-    MaintenanceRequest.find({}).populate("houseSpecified").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
+    MaintenanceRequest.find({})
+      .populate({
+        path: "houseSpecified",
+        match: { status: { $in: ["maintenance", "checked"] } },
+        select: "area houseNumber tenancyHistory status",
+      })
+      .populate({
+        path: "staff",
+        select: "name department dateOfEmployment position staffID",
+      }),
 
-    RetirementRequest.find({}).populate("houseSpecified").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
+    RetirementRequest.find({})
+      .populate({
+        path: "houseSpecified",
+        match: { status: { $in: ["retirement", "checked"] } },
+        select: "area houseNumber tenancyHistory status",
+      })
+      .populate({
+        path: "staff",
+        select: "name department dateOfEmployment position staffID",
+      }),
   ]);
 
   if (applications.length === 0) {
@@ -77,43 +98,21 @@ export const getAllApplications = async (req, res) => {
     .json({ applications, nbHits: applications.length });
 };
 
-// @desc: GET SINGLE APPLICATIONS
-export const getSingleApplication = async (req, res) => {
-  const { id } = req.params;
-
-  const application = await Promise.all([
-    ApplicationRequest.find({ _id: id }).populate("alocatedHouse").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
-
-    MaintenanceRequest.find({ _id: id }).populate("houseSpecified").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
-
-    RetirementRequest.find({ _id: id }).populate("houseSpecified").populate({
-      path: "staff",
-      select: "name department dateOfEmployment position staffID",
-    }),
-  ]);
-
-  if (!application) {
-    throw new NotFoundError("The requested resource is not available");
-  }
-
-  return res.status(StatusCodes.OK).json({ application });
-};
-
 // @desc: GET ALL APPLICATION REQUEST
 export const getAllApplicationRequests = async (req, res) => {
   const application = await ApplicationRequest.find({})
-    .populate("alocatedHouse")
+    .populate({
+      path: "alocatedHouse",
+      match: {
+        status: { $in: ["application", "checked"] },
+        applicationStatus: { $in: ["pending", "rejected", "allocated"] },
+      },
+      select: "area houseNumber tenancyHistory status",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
     });
-
   if (application.length === 0) {
     throw new NotFoundError("No application requests at the moment");
   }
@@ -126,7 +125,11 @@ export const getAllApplicationRequests = async (req, res) => {
 // @desc: GET ALL MAINTENANCE REQUEST
 export const getAllMaintenanceRequests = async (req, res) => {
   const maintenance = await MaintenanceRequest.find({})
-    .populate("houseSpecified")
+    .populate({
+      path: "houseSpecified",
+      match: { status: { $in: ["maintenance", "checked"] } },
+      select: "area houseNumber tenancyHistory status",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
@@ -142,7 +145,11 @@ export const getAllMaintenanceRequests = async (req, res) => {
 // @desc: GET ALL RETIREMENT REQUEST
 export const getAllRetirementRequests = async (req, res) => {
   const retirement = await RetirementRequest.find({})
-    .populate("houseSpecified")
+    .populate({
+      path: "houseSpecified",
+      match: { status: { $in: ["retirement", "checked"] } },
+      select: "area houseNumber tenancyHistory status",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
@@ -160,7 +167,14 @@ export const getSingleApplicationRequest = async (req, res) => {
   const { id } = req.params;
 
   const application = await ApplicationRequest.find({ _id: id })
-    .populate("houseSpecified")
+    .populate({
+      path: "alocatedHouse",
+      match: {
+        status: { $in: ["application", "checked"] },
+        applicationStatus: { $in: ["pending", "rejected", "allocated"] },
+      },
+      select: "area houseNumber tenancyHistory status dateApplied",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
@@ -178,7 +192,11 @@ export const getSingleMaintenanceRequest = async (req, res) => {
   const { id } = req.params;
 
   const maintenance = await MaintenanceRequest.find({ _id: id })
-    .populate("houseSpecified")
+    .populate({
+      path: "houseSpecified",
+      match: { status: { $in: ["maintenance", "checked"] } },
+      select: "area houseNumber tenancyHistory status dateApplied",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
@@ -196,7 +214,11 @@ export const getSingleRetirementRequest = async (req, res) => {
   const { id } = req.params;
 
   const retirement = await RetirementRequest.find({ _id: id })
-    .populate("houseSpecified")
+    .populate({
+      path: "houseSpecified",
+      match: { status: { $in: ["retirement", "checked"] } },
+      select: "area houseNumber tenancyHistory status dateApplied",
+    })
     .populate({
       path: "staff",
       select: "name department dateOfEmployment position staffID",
@@ -254,11 +276,12 @@ export const allocateHouse = async (req, res) => {
   // @desc: updating the application of the staff with the allocated house reference and updating staff with application he made
   const staffID = houseApplication.staff;
   const staffString = staffID;
-  const staffStringID = staffString.toString()
-  
-  await Staff.findOneAndUpdate({ _id: staffStringID }, 
-    { $push: { applicationRequests: houseApplication._id }}
-  );  
+  const staffStringID = staffString.toString();
+
+  await Staff.findOneAndUpdate(
+    { _id: staffStringID },
+    { $push: { applicationRequests: houseApplication._id } }
+  );
 
   houseApplication.alocatedHouse = house._id;
   houseApplication.status = "checked";
